@@ -137,7 +137,7 @@ try:
 
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-    # Convert column names to uppercase
+    # Converte as colunas em uppercase
     df.columns = [col.upper() for col in df.columns]
 
     arquivo_csv = f"CARNAVAL_REDS_RAT_{data_nome}_{data_nome}.csv"
@@ -169,7 +169,7 @@ try:
     log_message('----Query 2 processada com sucesso!----')
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-    # Convert column names to uppercase
+    # Converte as colunas em uppercase
     df.columns = [col.upper() for col in df.columns]
 
     arquivo_csv = f"CARNAVAL_REDS_RAT_EFETIVOS_{data_nome}_{data_nome}.csv"
@@ -201,7 +201,7 @@ try:
     log_message('----Query 3 processada com sucesso!----')
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-    # Convert column names to uppercase
+    # Converte as colunas em uppercase
     df.columns = [col.upper() for col in df.columns]
 
     arquivo_csv = f"CARNAVAL_REDS_RAT_Produtividade_{data_nome}_{data_nome}.csv"
@@ -234,7 +234,7 @@ try:
     cursor.execute(query_4)
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-    # Convert column names to uppercase
+    # Converte as colunas em uppercase
     df.columns = [col.upper() for col in df.columns]
 
     arquivo_csv = f"CARNAVAL_REDS_RAT_VIATURAS_{data_nome}_{data_nome}.csv"
@@ -295,7 +295,7 @@ try:
     log_message('----Query 5 processada com sucesso!----')
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-    # Convert column names to uppercase
+    # Converte as colunas em uppercase
     df.columns = [col.upper() for col in df.columns]
 
     arquivo_csv = f"CARNAVAL_REDS_BOS_{data_nome}_{data_nome}.csv"
@@ -327,7 +327,7 @@ try:
     log_message('----Query 6 processada com sucesso!----')
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-    # Convert column names to uppercase
+    # Converte as colunas em uppercase
     df.columns = [col.upper() for col in df.columns]
 
     arquivo_csv = f"CARNAVAL_REDS_BOS_EFETIVOS_{data_nome}_{data_nome}.csv"
@@ -373,7 +373,7 @@ try:
     log_message('----Query 7 processada com sucesso!----')
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-    # Convert column names to uppercase
+    # Converte as colunas em uppercase
     df.columns = [col.upper() for col in df.columns]
 
     arquivo_csv = f"CARNAVAL_REDS_BOS_ENVOLVIDO_{data_nome}_{data_nome}.csv"
@@ -407,7 +407,7 @@ try:
     log_message('----Query 8 processada com sucesso!----')
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-    # Convert column names to uppercase
+    # Converte as colunas em uppercase
     df.columns = [col.upper() for col in df.columns]
 
     arquivo_csv = f"CARNAVAL_REDS_BOS_VIATURAS_{data_nome}_{data_nome}.csv"
@@ -430,12 +430,14 @@ try:
     host_ftp, porta_ftp, login_ftp, snh_ftp = ftp_config[0]
     log_message('Acessando Servidor FTP')
     print(ftp_config)
+
     ############################################################################################
     ftp_host = host_ftp
     ftp_port = int(porta_ftp)
     ftp_username = login_ftp
     ftp_password = snh_ftp
     ############################################################################################
+    
     # Diretório dos arquivos ZIP
     local_dir_path = 'C:\\AUTOMATO\\CSV'
     # Timeout (segundos)
