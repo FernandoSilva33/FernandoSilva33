@@ -64,7 +64,7 @@ try:
     #################################################
 
     #DECLARAÇÃO DO INÍCIO DO PERÍODO
-    data_atual = datetime(2024, 5, 1)
+    data_atual = datetime(2024, 1, 1)
     data_fim = datetime.now()
     while data_atual < data_fim:
         data_nome = data_atual.strftime("%Y%m%d")
@@ -132,8 +132,8 @@ try:
             AND OCO.nome_tipo_relatorio = 'RAT'
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND OCO.data_hora_inclusao BETWEEN '{}' AND '{}'
-            ORDER BY OCO.data_hora_inclusao;
+            AND OCO.data_hora_fato BETWEEN '{}' AND '{}'
+            ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
 
         log_message('----Iniciando processamento da query.----')
@@ -167,8 +167,8 @@ try:
             AND OCO.nome_tipo_relatorio = 'RAT'
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND OCO.data_hora_inclusao BETWEEN '{}' AND '{}'
-            ORDER BY OCO.data_hora_inclusao;
+            AND OCO.data_hora_fato BETWEEN '{}' AND '{}'
+            ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_2)
         log_message('----Query 2 processada com sucesso!----')
@@ -199,9 +199,9 @@ try:
             ON OCO.numero_ocorrencia = PROD.numero_ocorrencia
         WHERE 1=1
         AND OCO.data_hora_fato IS NOT NULL
-        AND PROD.data_hora_inclusao BETWEEN '{}' AND '{}'
+        AND PROD.data_hora_fato BETWEEN '{}' AND '{}'
         AND PROD.quantidade <> 0
-        ORDER BY PROD.data_hora_inclusao;
+        ORDER BY PROD.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_3)
         log_message('----Query 3 processada com sucesso!----')
@@ -235,8 +235,8 @@ try:
             AND OCO.nome_tipo_relatorio = 'RAT'
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND VTR.data_hora_inclusao BETWEEN '{}' AND '{}'
-            ORDER BY VTR.data_hora_inclusao;
+            AND VTR.data_hora_fato BETWEEN '{}' AND '{}'
+            ORDER BY VTR.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_4)
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
@@ -295,8 +295,8 @@ try:
             AND OCO.nome_tipo_relatorio IN ('BOS', 'BOS AMPLO')
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND OCO.data_hora_inclusao BETWEEN '{}' AND '{}'
-            ORDER BY OCO.data_hora_inclusao;
+            AND OCO.data_hora_fato BETWEEN '{}' AND '{}'
+            ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_5)
         log_message('----Query 5 processada com sucesso!----')
@@ -328,8 +328,8 @@ try:
             AND OCO.nome_tipo_relatorio IN ('BOS', 'BOS AMPLO')
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND OCO.data_hora_inclusao BETWEEN '{}' AND '{}'
-            ORDER BY OCO.data_hora_inclusao;
+            AND OCO.data_hora_fato BETWEEN '{}' AND '{}'
+            ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_6)
         log_message('----Query 6 processada com sucesso!----')
@@ -374,9 +374,9 @@ try:
             AND OCO.nome_tipo_relatorio IN ('BOS', 'BOS AMPLO')
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND OCO.data_hora_inclusao BETWEEN '{}' AND '{}'
+            AND OCO.data_hora_fato BETWEEN '{}' AND '{}'
             AND ENV.nome_completo_envolvido <> ''
-            ORDER BY OCO.data_hora_inclusao;
+            ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_7)
         log_message('----Query 7 processada com sucesso!----')
@@ -410,8 +410,8 @@ try:
             AND OCO.nome_tipo_relatorio IN ('BOS', 'BOS AMPLO')
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND VTR.data_hora_inclusao BETWEEN '{}' AND '{}'
-            ORDER BY VTR.data_hora_inclusao;
+            AND VTR.data_hora_fato BETWEEN '{}' AND '{}'
+            ORDER BY VTR.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_8)
         log_message('----Query 8 processada com sucesso!----')
@@ -450,7 +450,7 @@ try:
     ############################################################################################
 
     # Diretório dos arquivos ZIP
-    local_dir_path = 'C:\\AUTOMATO\\CSV'
+    local_dir_path = 'D:\\CSV'
     # Timeout (segundos)
     timeout_value = 10
     # Objeto FTP timeout
