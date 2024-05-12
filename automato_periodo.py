@@ -58,14 +58,15 @@ try:
     cursor = conn.cursor()
     
     log_message('***** BISP CONECTADA - SUCESSO *****')
+
     #################################################
     ### LAÇO DE REPETIÇÃO PARA PERÍODO PROGRAMADO ###
     #################################################
 
     #DECLARAÇÃO DO INÍCIO DO PERÍODO
     data_atual = datetime(2024, 5, 1)
-
-    while data_atual < datetime.now():
+    data_fim = datetime.now()
+    while data_atual < data_fim:
         data_nome = data_atual.strftime("%Y%m%d")
         data_consulta = data_atual.strftime("%Y%m%d")
         log_message(f'A data atual é: {data_nome}')
@@ -141,7 +142,7 @@ try:
 
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-        # Convert column names to uppercase
+        # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
         
         arquivo_csv = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_consulta}.csv"
@@ -174,7 +175,7 @@ try:
 
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-        # Convert column names to uppercase
+        # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
         arquivo_csv = f"CARNAVAL_REDS_RAT_EFETIVOS_{data_consulta}_{data_consulta}.csv"
@@ -207,7 +208,7 @@ try:
 
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-        # Convert column names to uppercase
+        # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
         arquivo_csv = f"CARNAVAL_REDS_RAT_Produtividade_{data_consulta}_{data_consulta}.csv"
@@ -240,7 +241,7 @@ try:
         cursor.execute(query_4)
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-        # Convert column names to uppercase
+        # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
         arquivo_csv = f"CARNAVAL_REDS_RAT_VIATURAS_{data_consulta}_{data_consulta}.csv"
@@ -302,7 +303,7 @@ try:
 
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-        # Convert column names to uppercase
+        # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
         arquivo_csv = f"CARNAVAL_REDS_BOS_{data_consulta}_{data_consulta}.csv"
@@ -335,7 +336,7 @@ try:
 
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-        # Convert column names to uppercase
+        # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
         arquivo_csv = f"CARNAVAL_REDS_BOS_EFETIVOS_{data_consulta}_{data_consulta}.csv"
@@ -382,7 +383,7 @@ try:
 
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-        # Convert column names to uppercase
+        # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
         arquivo_csv = f"CARNAVAL_REDS_BOS_ENVOLVIDO_{data_consulta}_{data_consulta}.csv"
@@ -417,7 +418,7 @@ try:
 
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
-        # Convert column names to uppercase
+        # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
         arquivo_csv = f"CARNAVAL_REDS_BOS_VIATURAS_{data_consulta}_{data_consulta}.csv"
@@ -440,6 +441,7 @@ try:
     host_ftp, porta_ftp, login_ftp, snh_ftp = ftp_config[0]
     log_message('Acessando Servidor FTP')
     print(ftp_config)
+
     ############################################################################################
     ftp_host = host_ftp
     ftp_port = int(porta_ftp)
