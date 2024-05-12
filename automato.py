@@ -417,11 +417,24 @@ try:
         zipf.write(arquivo_csv)
     
     os.remove(arquivo_csv)
+    
+    # O arquivo login_ftp deve ser armazenado na raiz de Automato em Documentos
+
+    ftp_config = []
+    with open(os.path.join(pasta_automato, 'ftp_login'), 'r') as txtfile:
+        for linha in txtfile:
+            host_ftp, porta_ftp, login_ftp, snh_ftp = linha.strip().split('|')
+            ftp_config.append((host_ftp, porta_ftp, login_ftp, snh_ftp))
+                
+    # Acessando os elementos dentro da primeira tupla da lista ftp_config
+    host_ftp, porta_ftp, login_ftp, snh_ftp = ftp_config[0]
+    log_message('Acessando Servidor FTP')
+    print(ftp_config)
     ############################################################################################
-    ftp_host = 'ftp1.policiamilitar.mg.gov.br'
-    ftp_port = 13568
-    ftp_username = 'cinds'
-    ftp_password = 'q1w2e3!@#'
+    ftp_host = host_ftp
+    ftp_port = int(porta_ftp)
+    ftp_username = login_ftp
+    ftp_password = snh_ftp
     ############################################################################################
     # Diretório dos arquivos ZIP
     local_dir_path = 'C:\\AUTOMATO\\CSV'
