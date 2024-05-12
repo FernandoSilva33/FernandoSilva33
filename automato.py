@@ -8,6 +8,7 @@ import random
 from ftplib import FTP, error_perm
 import socket
 
+#Testando GitHub
 # Obter o diretório "Documentos" do usuário atual
 pasta_documentos = os.path.expanduser("~" + os.sep + "Documentos")
 
