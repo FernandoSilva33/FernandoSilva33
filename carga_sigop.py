@@ -23,7 +23,7 @@ def carga_automatica():
     programa = 'automato.py'
     subprocess.Popen([sys.executable, programa], creationflags=subprocess.CREATE_NEW_CONSOLE)
 
-hora_carga = '06:00'
+hora_carga = '05:45'
 
 # Agendar a tarefa no horário armazenado em hora_carga
 try:

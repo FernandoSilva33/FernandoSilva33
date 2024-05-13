@@ -8,7 +8,7 @@ import random
 from ftplib import FTP, error_perm
 import socket
 
-#Testando GitHub
+
 # Obter o diretório "Documentos" do usuário atual
 pasta_documentos = os.path.expanduser("~" + os.sep + "Documentos")
 
@@ -78,7 +78,7 @@ try:
     log_message(f'A data atual é: {data_atual}')
     log_message(f'A data de extração é: {data_nome}')
 
-    os.chdir('c:/Automato/CSV')
+    os.chdir('D:/CSV')
     log_message(f'Mudou para o diretório: {os.getcwd()}')
 
     # A QUERY A SER CONSULTADA
@@ -419,7 +419,6 @@ try:
     os.remove(arquivo_csv)
     
     # O arquivo login_ftp deve ser armazenado na raiz de Automato em Documentos
-
     ftp_config = []
     with open(os.path.join(pasta_automato, 'ftp_login'), 'r') as txtfile:
         for linha in txtfile:
@@ -437,11 +436,11 @@ try:
     ftp_username = login_ftp
     ftp_password = snh_ftp
     ############################################################################################
-    
+
     # Diretório dos arquivos ZIP
-    local_dir_path = 'C:\\AUTOMATO\\CSV'
+    local_dir_path = 'D:\\CSV'
     # Timeout (segundos)
-    timeout_value = 30
+    timeout_value = 10
     # Objeto FTP timeout
     ftp = FTP()
     ftp.timeout = timeout_value
@@ -472,14 +471,14 @@ try:
                     retry_count += 1
                     log_message(f"Falha na transferência de {file}: {e}. Tentando novamente...")
     except Exception as e:
-        log_message(f"Falha na conexão FTP: {e}")    
-    
+        log_message(f"Falha na conexão FTP: {e}")
+        
 except ImpalaError as e:
-    log_message(f'***** Erro de autenticação: {e} *****')
-    log_message('---- Automato encerrado com ERRO')
+    log_message('***** Erro de autenticação: {e} *****')
+    input('----Concluido com ERRO - Pressione Enter para fechar----')
 except Exception as other_error:
     log_message(f'***** Algo deu errado - Procedimento abortado: {other_error} *****')
-    log_message('---- Automato encerrado com ERRO')
+    input('----Automato encerrado com ERRO - Pressione Enter para fechar----')
 finally:
     if ftp.sock is not None:
             ftp.quit()
