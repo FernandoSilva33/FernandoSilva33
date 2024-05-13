@@ -23,14 +23,14 @@ def carga_automatica():
     programa = 'automato.py'
     subprocess.Popen([sys.executable, programa], creationflags=subprocess.CREATE_NEW_CONSOLE)
 
-hora_carga = '07:00'
+hora_carga = '06:00'
 
 # Agendar a tarefa no horário armazenado em hora_carga
 try:
     schedule.every().day.at(hora_carga).do(carga_automatica)
     log_message('----Se houver apenas esses dizeres a carga desta data falhou----')
     while True:
-        now = datetime.now().strftime("%H:%M:%S")  # Agora você pode usar datetime.now()
+        now = datetime.now().strftime("%H:%M:%S")
         print(' -----------------------------------------------------')
         print('| GERENCIADOR DE CARGA AUTOMÁTICA - SIGOP - CGA 2024  |')
         print('| ----------------------------------------------------|')
