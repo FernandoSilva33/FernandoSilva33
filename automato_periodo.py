@@ -87,6 +87,7 @@ try:
         os.chdir('D:/CSV')
         log_message(f'Mudou para o diretório: {os.getcwd()}')
         # A QUERY A SER CONSULTADA
+        #Testando GitHub
         query_1 = """
             -- 1 - REDS_RAT - OK
             SELECT	
