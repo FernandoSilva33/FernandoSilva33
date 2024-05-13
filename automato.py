@@ -115,8 +115,8 @@ try:
             OCO.numero_latitude AS 'LATITUDE',
             OCO.numero_longitude AS 'LONGITUDE',
             MASTER.codigo_unidade_area AS 'COD_UNIDADE_AREA',
-            MASTER.unidade_area_militar_nome AS 'NOM_UNIDADE_AREA'
-            CONCAT('PM',OCO.digitador_matricula) AS 'DIGITADOR',
+            MASTER.unidade_area_militar_nome AS 'NOM_UNIDADE_AREA',
+            CONCAT('PM',OCO.digitador_matricula) AS 'DIGITADOR'
         FROM
             db_bisp_reds_reporting.tb_ocorrencia OCO
         LEFT JOIN db_bisp_reds_master.tb_local_unidade_area_pmmg AS 'MASTER'
