@@ -439,8 +439,7 @@ try:
     # Acessando os elementos dentro da primeira tupla da lista ftp_config
     host_ftp, porta_ftp, login_ftp, snh_ftp = ftp_config[0]
     log_message('Acessando Servidor FTP')
-    print(ftp_config)
-
+    
     ############################################################################################
     ftp_host = host_ftp
     ftp_port = int(porta_ftp)
@@ -468,7 +467,7 @@ try:
             retry_count = 0
             max_retries = 10
             if file in remote_files:
-                log_message(f"Skipping file {file} as it already exists on the FTP server.")
+                log_message(f"O arquivo {file} já existe no FTP server.")
                 continue
             while retry_count < max_retries:
                 try:
