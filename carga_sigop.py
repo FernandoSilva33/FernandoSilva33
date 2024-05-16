@@ -5,7 +5,7 @@ import sys
 import os
 from datetime import datetime
 
-root_dir = 'c:/Automato'
+root_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(root_dir)
 
 def log_message(message):
@@ -23,14 +23,13 @@ def carga_automatica():
     programa = 'automato.py'
     subprocess.Popen([sys.executable, programa], creationflags=subprocess.CREATE_NEW_CONSOLE)
 
-hora_carga = '05:45'
+hora_carga = '21:56'
 
 # Agendar a tarefa no horário armazenado em hora_carga
 try:
     schedule.every().day.at(hora_carga).do(carga_automatica)
-    log_message('----Se houver apenas esses dizeres a carga desta data falhou----')
     while True:
-        now = datetime.now().strftime("%H:%M:%S")
+        # now = datetime.now().strftime("%H:%M:%S")
         print(' -----------------------------------------------------')
         print('| GERENCIADOR DE CARGA AUTOMÁTICA - SIGOP - CGA 2024  |')
         print('| ----------------------------------------------------|')
@@ -40,7 +39,7 @@ try:
         print(f'|                       -*-                           |')
         print(f'| A carga atualmente está programada para às {hora_carga}    |')
         print(' -----------------------------------------------------', end='\r\n')
-        time.sleep(1)
+        time.sleep(30)
         schedule.run_pending()
         os.system('cls')
 except Exception as e:
