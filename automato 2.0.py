@@ -13,7 +13,7 @@ import socket
 root_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(root_dir)
 
-hora_carga = '22:06'
+hora_carga = '06:15'
 
 def log_message(message):
     now = datetime.now()
