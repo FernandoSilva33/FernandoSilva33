@@ -10,7 +10,7 @@ import socket
 
 #Testando GitHub
 # Obter o diretório "Documentos" do usuário atual
-pasta_documentos = os.path.expanduser("~" + os.sep + "Documentos")
+pasta_documentos = os.path.expanduser("~" + os.sep + "Documents")
 
 # Criar o caminho para a pasta "Automato" dentro da pasta "Documentos"
 pasta_automato = os.path.join(pasta_documentos, "Automato")
@@ -23,6 +23,11 @@ if not os.path.exists(pasta_automato):
 log_dir = os.path.join(pasta_automato, "Logs")
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
+
+# Verificar se a pasta "CSV" já existe, se não, criar
+zip_dir = os.path.join(pasta_automato, "CSV")
+if not os.path.exists(zip_dir):
+    os.makedirs(zip_dir)
 
 def log_message(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
