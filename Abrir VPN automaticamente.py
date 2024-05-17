@@ -1,5 +1,13 @@
 import pyautogui
 import time
+import pywhatkit
+
+phone_number = '+5532999846251'
+message = 'Carga do automato concluida'
+hours = 23
+minutes = 52
+pywhatkit.sendwhatmsg(phone_number, message, hours, minutes)
+print('Mensagem enviada')
 
 print("Posição para leitura...")
 time.sleep(1)
