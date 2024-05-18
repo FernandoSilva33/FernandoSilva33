@@ -1,23 +1,11 @@
-import pyautogui
+import pyautogui as pg
 import time
 
-print("Posição para leitura...")
-time.sleep(1)
+arrow_image = "E:/GitHub/FernandoSilva33-1/arrow.png"
+arrow_location = pg.locateOnScreen(arrow_image)
 
-x, y = pyautogui.position()
-print("Current mouse coordinates:", x, y)
-
-target_coords = (1123, 742)
-# pyautogui.moveTo(target_coords, duration=0.2)
-pyautogui.click(target_coords)
-time.sleep(1)
-
-target_coords_2 = (1034, 633)
-# pyautogui.moveTo(target_coords_2, duration=0.2)
-pyautogui.rightClick(target_coords_2) 
-time.sleep(1)
-
-target_coords_3 = (936, 385)
-# pyautogui.moveTo(target_coords_2, duration=0.2)
-pyautogui.click(target_coords_3)
-time.sleep(1)
+# If the arrow is found, click on it
+if arrow_location is not None:
+  pg.rightClick(arrow_location.left + 20, arrow_location.top + 20, duration=2)
+else:
+    print("Could not find the 'Show hidden items' arrow.")
