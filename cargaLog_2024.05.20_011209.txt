@@ -1,1 +1,0 @@
-[2024-05-20 01:12:09] ----Procedimento de carga falhou. Erro: cannot access local variable 'ftp' where it is not associated with a value----
