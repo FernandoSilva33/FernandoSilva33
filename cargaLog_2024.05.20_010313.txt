@@ -1,0 +1,1 @@
+[2024-05-20 01:03:13] ----Procedimento de carga falhou. Erro: [Errno 2] No such file or directory: 'C:\\Users\\luiz2\\Documentos\\Automato\\credencials'----
