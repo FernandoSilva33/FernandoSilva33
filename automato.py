@@ -62,6 +62,7 @@ try:
     
     #DATA USADA PARA NOME DOS ARQUIVOS
     data_atual = datetime.now().date()
+    # data_atual = datetime(year=2024, month=5, day=14)
     data_consulta = data_atual-timedelta(days=1)
     data_nome = data_consulta.strftime("%Y%m%d")
     

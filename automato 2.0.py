@@ -13,7 +13,7 @@ import socket
 root_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(root_dir)
 
-hora_carga = '06:15'
+hora_carga = '06:40'
 
 def log_message(message):
     now = datetime.now()
@@ -27,7 +27,7 @@ def carga_automatica():
     
     print('Iniciando carga automática Sigop')
     time.sleep(2)
-    #Testando GitHub
+
     # Obter o diretório "Documentos" do usuário atual
     pasta_documentos = os.path.expanduser("~" + os.sep + "Documentos")
 
