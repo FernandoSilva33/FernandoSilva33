@@ -1,5 +1,7 @@
-import os
+import schedule
+import time
 import sys
+import os
 import pandas as pd
 from impala.dbapi import connect, Error as ImpalaError
 from datetime import datetime, timedelta
@@ -7,12 +9,13 @@ import zipfile
 import random
 from ftplib import FTP, error_perm
 import socket
+import pywhatkit as pwk
 
-# Obter o diretório "Documentos" do usuário atual
-pasta_documentos = os.path.expanduser("~" + os.sep + "Documents")
+ # Obter o diretório "Documentos" do usuário atual
+pasta_documentos = os.path.expanduser("~" + os.sep + "Documentos")
 
 # Criar o caminho para a pasta "Automato" dentro da pasta "Documentos"
-pasta_automato = os.path.join(pasta_documentos, "Automato Periodo")
+pasta_automato = os.path.join(pasta_documentos, "Automato")
 
 # Verificar se a pasta "Automato" já existe, se não, criar
 if not os.path.exists(pasta_automato):
@@ -23,62 +26,76 @@ log_dir = os.path.join(pasta_automato, "Logs")
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
-# Verificar se a pasta "CSV" já existe, se não, criar
-zip_dir = os.path.join(pasta_automato, "CSV")
-if not os.path.exists(zip_dir):
-    os.makedirs(zip_dir)
+root_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(root_dir)
+
+hora_carga = '01:54'
 
 def log_message(message):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    nome_arquivo = os.path.join(log_dir, "log_periodo_{}.txt".format(data_log.strftime("%Y.%m.%d_%H%M%S")))
+    now = datetime.now()
+    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+    nome_arquivo = os.path.join(root_dir, "cargaLog_{}.txt".format(now.strftime("%Y.%m.%d_%H%M%S")))
     with open(nome_arquivo, 'a') as log_file:
         log_file.write(f"[{timestamp}] {message}\n")
     print(message)
     
-data_log = datetime.now()
+def whats_start(message_zap):
+    group_id = 'DfndJwhfLSu33AkopmxA1S'
+    message = message_zap
+    pwk.sendwhatmsg_to_group_instantly(group_id, message)
+    time.sleep(1)
+    pwk.whats.core.close_tab()
+    # os.remove(pasta_automato, 'carga_atual.txt')
 
-log_message('----Iniciando login na BISP----')
+def carga_automatica():
+    print('Iniciando carga automática Sigop')
+    time.sleep(2)
 
-# Cria uma lista para armazenar usuário e senha
-usuarios_senhas = []
-
-# O arquivo credencials deve ser armazenado na raiz de Automato em Documentos
-with open(os.path.join(pasta_automato, 'credencials'), 'r') as txtfile:
-    for linha in txtfile:
-        usuario, senha = linha.strip().split('|')
-        usuarios_senhas.append((usuario, senha))
+    def log_message(message):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        nome_arquivo = os.path.join(log_dir, "log_{}.txt".format(data_log.strftime("%Y.%m.%d_%H%M%S")))
+        with open(nome_arquivo, 'a') as log_file:
+            log_file.write(f"[{timestamp}] {message}\n")
+        print(message)
         
-usuario_senha_aleatorio = random.choice(usuarios_senhas)
-usuario_esc = usuario_senha_aleatorio[0]
-passw = usuario_senha_aleatorio[1]
-log_message(f'Acessando com o usuário: {usuario_esc}')
+    data_log = datetime.now()
 
-try:
-    conn = connect(host='clouderacdp02.prodemge.gov.br', port=21051,
-                database='db_bisp_reds_reporting',
-                auth_mechanism='PLAIN',
-                use_ssl=1,
-                user=usuario_esc,
-                password=passw,)
-    cursor = conn.cursor()
-    
-    log_message('***** BISP CONECTADA - SUCESSO *****')
+    log_message('----Iniciando login na BISP----')
 
-    #################################################
-    ### LAÇO DE REPETIÇÃO PARA PERÍODO PROGRAMADO ###
-    #################################################
+    # Cria uma lista para armazenar usuário e senha
+    usuarios_senhas = []
 
-    #DECLARAÇÃO DO INÍCIO DO PERÍODO
-    data_atual = datetime(2024, 1, 1)
-    data_fim = datetime.now()
-    while data_atual < data_fim:
-        data_nome = data_atual.strftime("%Y%m%d")
-        data_consulta = data_atual.strftime("%Y%m%d")
-        log_message(f'A data atual é: {data_nome}')
+    # O arquivo credencials deve ser armazenado na raiz de Automato em Documentos
+    with open(os.path.join(pasta_automato, 'credencials'), 'r') as txtfile:
+        for linha in txtfile:
+            usuario, senha = linha.strip().split('|')
+            usuarios_senhas.append((usuario, senha))
+            
+    usuario_senha_aleatorio = random.choice(usuarios_senhas)
+    usuario_esc = usuario_senha_aleatorio[0]
+    passw = usuario_senha_aleatorio[1]
+    log_message(f'Acessando com o usuário: {usuario_esc}')
 
+    try:
+        conn = connect(host='clouderacdp02.prodemge.gov.br', port=21051,
+                    database='db_bisp_reds_reporting',
+                    auth_mechanism='PLAIN',
+                    use_ssl=1,
+                    user=usuario_esc,
+                    password=passw,)
+        cursor = conn.cursor()
+        
+        log_message('***** BISP CONECTADA - SUCESSO *****')
+        
         #DATA USADA PARA NOME DOS ARQUIVOS
-        data_inicial_tm = data_atual
-        data_inicial_tm = datetime.combine(data_inicial_tm, datetime.min.time())  # Define a hora inicial como 00:00:00
+        data_atual = datetime.now().date()
+        data_consulta = data_atual-timedelta(days=1)
+        data_nome = data_consulta.strftime("%Y%m%d")
+        
+        # Define a hora inicial como 00:00:00
+        data_inicial_tm = datetime.combine(data_consulta, datetime.min.time())
+
+        # Define a hora final como 23:59:59
         data_final_tm = data_inicial_tm.replace(hour=23, minute=59, second=59)
 
         # Convertendo datetime em strings com a mesma formatação
@@ -86,13 +103,28 @@ try:
         data_final = data_final_tm.strftime("%Y-%m-%d %H:%M:%S")
 
         log_message(f'A data atual é: {data_atual}')
-        log_message(f'A data de inicio da extração é: {data_inicial}')
-        log_message(f'A data de término da extração é: {data_final}')
-
-        os.chdir('D:/CSV')
-        log_message(f'Mudou para o diretório: {os.getcwd()}')
-        # A QUERY A SER CONSULTADA
+        log_message(f'A data de extração é: {data_nome}')
         
+        query_carga = """
+            SELECT FROM_TIMESTAMP(data_hora_inclusao  ,'dd/MM/yy') datapreenchimento,
+            COUNT(numero_ocorrencia) AS contagem_ocorrencias
+            FROM tb_ocorrencia  
+            WHERE data_hora_inclusao  BETWEEN DATE_SUB(NOW(), INTERVAL 1 DAYS) AND NOW()
+            and digitador_id_orgao = 0
+            GROUP BY 1
+            ORDER BY 1 desc;
+            """
+        cursor.execute(query_carga)
+        df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
+        df.columns = [None]*len(df.columns)
+        df = df.iloc[0:1, :]
+        df.to_string()
+        whats_start(df)
+
+        os.chdir('c:/Automato/CSV')
+        log_message(f'Mudou para o diretório: {os.getcwd()}')
+
+        # A QUERY A SER CONSULTADA
         query_1 = """
             -- 1 - REDS_RAT - OK
             SELECT	
@@ -148,9 +180,9 @@ try:
 
         # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
-        
-        arquivo_csv = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_consulta}.csv"
-        arquivo_zip = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_consulta}.zip"
+
+        arquivo_csv = f"CARNAVAL_REDS_RAT_{data_nome}_{data_nome}.csv"
+        arquivo_zip = f"CARNAVAL_REDS_RAT_{data_nome}_{data_nome}.zip"
         df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
         with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
             zipf.write(arquivo_csv)
@@ -176,14 +208,13 @@ try:
         """.format(data_inicial, data_final)
         cursor.execute(query_2)
         log_message('----Query 2 processada com sucesso!----')
-
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
         # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
-        arquivo_csv = f"CARNAVAL_REDS_RAT_EFETIVOS_{data_consulta}_{data_consulta}.csv"
-        arquivo_zip = f"CARNAVAL_REDS_RAT_EFETIVOS_{data_consulta}_{data_consulta}.zip"
+        arquivo_csv = f"CARNAVAL_REDS_RAT_EFETIVOS_{data_nome}_{data_nome}.csv"
+        arquivo_zip = f"CARNAVAL_REDS_RAT_EFETIVOS_{data_nome}_{data_nome}.zip"
         df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
         with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
             zipf.write(arquivo_csv)
@@ -192,31 +223,30 @@ try:
         
         query_3 = """
         SELECT	
-        -- 3 - REDS_RAT_produtividade - OK
-            PROD.numero_ocorrencia AS 'RAT.NUM_ATIVIDADE',
-            PROD.indicador_descricao AS 'DESCRICAO',
-            PROD.quantidade AS 'QUANTIDADE'	
-        FROM
-            db_bisp_reds_reporting.tb_ocorrencia OCO
-        LEFT JOIN
-            db_bisp_reds_reporting.vw_rat_produtividade_ocorrencia_s PROD
-            ON OCO.numero_ocorrencia = PROD.numero_ocorrencia
-        WHERE 1=1
-        AND OCO.data_hora_fato IS NOT NULL
-        AND PROD.data_hora_fato BETWEEN '{}' AND '{}'
-        AND PROD.quantidade <> 0
-        ORDER BY PROD.data_hora_fato;
+            -- 3 - REDS_RAT_produtividade - OK
+                PROD.numero_ocorrencia AS 'RAT.NUM_ATIVIDADE',
+                PROD.indicador_descricao AS 'DESCRICAO',
+                PROD.quantidade AS 'QUANTIDADE'	
+            FROM
+                db_bisp_reds_reporting.tb_ocorrencia OCO
+            LEFT JOIN
+                db_bisp_reds_reporting.vw_rat_produtividade_ocorrencia_s PROD
+                ON OCO.numero_ocorrencia = PROD.numero_ocorrencia
+            WHERE 1=1
+            AND OCO.data_hora_fato IS NOT NULL
+            AND PROD.data_hora_fato BETWEEN '{}' AND '{}'
+            AND PROD.quantidade <> 0
+            ORDER BY PROD.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_3)
         log_message('----Query 3 processada com sucesso!----')
-
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
         # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
-        arquivo_csv = f"CARNAVAL_REDS_RAT_Produtividade_{data_consulta}_{data_consulta}.csv"
-        arquivo_zip = f"CARNAVAL_REDS_RAT_Produtividade_{data_consulta}_{data_consulta}.zip"
+        arquivo_csv = f"CARNAVAL_REDS_RAT_Produtividade_{data_nome}_{data_nome}.csv"
+        arquivo_zip = f"CARNAVAL_REDS_RAT_Produtividade_{data_nome}_{data_nome}.zip"
         df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
         with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
             zipf.write(arquivo_csv)
@@ -248,8 +278,8 @@ try:
         # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
-        arquivo_csv = f"CARNAVAL_REDS_RAT_VIATURAS_{data_consulta}_{data_consulta}.csv"
-        arquivo_zip = f"CARNAVAL_REDS_RAT_VIATURAS_{data_consulta}_{data_consulta}.zip"
+        arquivo_csv = f"CARNAVAL_REDS_RAT_VIATURAS_{data_nome}_{data_nome}.csv"
+        arquivo_zip = f"CARNAVAL_REDS_RAT_VIATURAS_{data_nome}_{data_nome}.zip"
         df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
         with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
             zipf.write(arquivo_csv)
@@ -304,14 +334,13 @@ try:
         """.format(data_inicial, data_final)
         cursor.execute(query_5)
         log_message('----Query 5 processada com sucesso!----')
-
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
         # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
-        arquivo_csv = f"CARNAVAL_REDS_BOS_{data_consulta}_{data_consulta}.csv"
-        arquivo_zip = f"CARNAVAL_REDS_BOS_{data_consulta}_{data_consulta}.zip"
+        arquivo_csv = f"CARNAVAL_REDS_BOS_{data_nome}_{data_nome}.csv"
+        arquivo_zip = f"CARNAVAL_REDS_BOS_{data_nome}_{data_nome}.zip"
         df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
         with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
             zipf.write(arquivo_csv)
@@ -337,14 +366,13 @@ try:
         """.format(data_inicial, data_final)
         cursor.execute(query_6)
         log_message('----Query 6 processada com sucesso!----')
-
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
         # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
-        arquivo_csv = f"CARNAVAL_REDS_BOS_EFETIVOS_{data_consulta}_{data_consulta}.csv"
-        arquivo_zip = f"CARNAVAL_REDS_BOS_EFETIVOS_{data_consulta}_{data_consulta}.zip"
+        arquivo_csv = f"CARNAVAL_REDS_BOS_EFETIVOS_{data_nome}_{data_nome}.csv"
+        arquivo_zip = f"CARNAVAL_REDS_BOS_EFETIVOS_{data_nome}_{data_nome}.zip"
         df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
         with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
             zipf.write(arquivo_csv)
@@ -384,14 +412,13 @@ try:
         """.format(data_inicial, data_final)
         cursor.execute(query_7)
         log_message('----Query 7 processada com sucesso!----')
-
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
         # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
-        arquivo_csv = f"CARNAVAL_REDS_BOS_ENVOLVIDO_{data_consulta}_{data_consulta}.csv"
-        arquivo_zip = f"CARNAVAL_REDS_BOS_ENVOLVIDO_{data_consulta}_{data_consulta}.zip"
+        arquivo_csv = f"CARNAVAL_REDS_BOS_ENVOLVIDO_{data_nome}_{data_nome}.csv"
+        arquivo_zip = f"CARNAVAL_REDS_BOS_ENVOLVIDO_{data_nome}_{data_nome}.zip"
         df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
         with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
             zipf.write(arquivo_csv)
@@ -419,85 +446,105 @@ try:
         """.format(data_inicial, data_final)
         cursor.execute(query_8)
         log_message('----Query 8 processada com sucesso!----')
-
         df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
         # Converte as colunas em uppercase
         df.columns = [col.upper() for col in df.columns]
 
-        arquivo_csv = f"CARNAVAL_REDS_BOS_VIATURAS_{data_consulta}_{data_consulta}.csv"
-        arquivo_zip = f"CARNAVAL_REDS_BOS_VIATURAS_{data_consulta}_{data_consulta}.zip"
+        arquivo_csv = f"CARNAVAL_REDS_BOS_VIATURAS_{data_nome}_{data_nome}.csv"
+        arquivo_zip = f"CARNAVAL_REDS_BOS_VIATURAS_{data_nome}_{data_nome}.zip"
         df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
         with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
             zipf.write(arquivo_csv)
-        data_atual = data_atual + timedelta(days=1)
-        log_message(f'Reiniciando protocolo para o dia {data_atual}')
-        os.remove(arquivo_csv)
-    
-    # O arquivo login_ftp deve ser armazenado na raiz de Automato em Documentos
-    ftp_config = []
-    with open(os.path.join(pasta_automato, 'ftp_login'), 'r') as txtfile:
-        for linha in txtfile:
-            host_ftp, porta_ftp, login_ftp, snh_ftp = linha.strip().split('|')
-            ftp_config.append((host_ftp, porta_ftp, login_ftp, snh_ftp))
-                
-    # Acessando os elementos dentro da primeira tupla da lista ftp_config
-    host_ftp, porta_ftp, login_ftp, snh_ftp = ftp_config[0]
-    log_message('Acessando Servidor FTP')
-    
-    ############################################################################################
-    ftp_host = host_ftp
-    ftp_port = int(porta_ftp)
-    ftp_username = login_ftp
-    ftp_password = snh_ftp
-    ############################################################################################
-
-    # Diretório dos arquivos ZIP
-    local_dir_path = 'D:\\CSV'
-    # Timeout (segundos)
-    timeout_value = 10
-    # Objeto FTP timeout
-    ftp = FTP()
-    ftp.timeout = timeout_value
-    try:
-        # Conecta no host FTP
-        ftp.connect(ftp_host, ftp_port)
-        ftp.login(ftp_username, ftp_password)
-        # Cria uma lista com todos os arquivos no diretório
-        files = [f for f in os.listdir(local_dir_path) if os.path.isfile(os.path.join(local_dir_path, f))]
-        # Get a list of files in the remote directory
-        remote_files = ftp.nlst()
-        for file in files:
-            file_path = os.path.join(local_dir_path, file)
-            retry_count = 0
-            max_retries = 10
-            if file in remote_files:
-                log_message(f"O arquivo {file} já existe no FTP server.")
-                continue
-            while retry_count < max_retries:
-                try:
-                    # Abre e envia arquivo em modo binário
-                    with open(file_path, 'rb') as fp:
-                        log_message(f"Enviando arquivo: {file_path}")
-                        ftp.storbinary(f'STOR {file}', fp)
-                    log_message(f"Arquivo enviado: {file}")
-                    break  # Sai do loop quando sucesso
-                except (socket.timeout, error_perm) as e:
-                    retry_count += 1
-                    log_message(f"Falha na transferência de {file}: {e}. Tentando novamente...")
-    except Exception as e:
-        log_message(f"Falha na conexão FTP: {e}")
         
-except ImpalaError as e:
-    log_message('***** Erro de autenticação: {e} *****')
-    input('----Concluido com ERRO - Pressione Enter para fechar----')
-except Exception as other_error:
-    log_message(f'***** Algo deu errado - Procedimento abortado: {other_error} *****')
-    input('----Automato encerrado com ERRO - Pressione Enter para fechar----')
-finally:
-    if ftp.sock is not None:
+        os.remove(arquivo_csv)
+        
+        # O arquivo login_ftp deve ser armazenado na raiz de Automato em Documentos
+
+        ftp_config = []
+        with open(os.path.join(pasta_automato, 'ftp_login'), 'r') as txtfile:
+            for linha in txtfile:
+                host_ftp, porta_ftp, login_ftp, snh_ftp = linha.strip().split('|')
+                ftp_config.append((host_ftp, porta_ftp, login_ftp, snh_ftp))
+                    
+        # Acessando os elementos dentro da primeira tupla da lista ftp_config
+        host_ftp, porta_ftp, login_ftp, snh_ftp = ftp_config[0]
+        log_message('Acessando Servidor FTP')
+        
+        ############################################################################################
+        ftp_host = host_ftp
+        ftp_port = int(porta_ftp)
+        ftp_username = login_ftp
+        ftp_password = snh_ftp
+        ############################################################################################
+        
+        # Diretório dos arquivos ZIP
+        local_dir_path = 'C:\\AUTOMATO\\CSV'
+        # Timeout (segundos)
+        timeout_value = 30
+        # Objeto FTP timeout
+        ftp = FTP()
+        ftp.timeout = timeout_value
+        try:
+            # Conecta no host FTP
+            ftp.connect(ftp_host, ftp_port)
+            ftp.login(ftp_username, ftp_password)
+            # Cria uma lista com todos os arquivos no diretório
+            files = [f for f in os.listdir(local_dir_path) if os.path.isfile(os.path.join(local_dir_path, f))]
+            # Get a list of files in the remote directory
+            remote_files = ftp.nlst()
+            for file in files:
+                file_path = os.path.join(local_dir_path, file)
+                retry_count = 0
+                max_retries = 10
+                if file in remote_files:
+                    log_message(f"O arquivo {file} já existe no FTP server.")
+                    continue
+                while retry_count < max_retries:
+                    try:
+                        # Abre e envia arquivo em modo binário
+                        with open(file_path, 'rb') as fp:
+                            log_message(f"Enviando arquivo: {file_path}")
+                            ftp.storbinary(f'STOR {file}', fp)
+                        log_message(f"Arquivo enviado: {file}")
+                        break  # Sai do loop quando sucesso
+                    except (socket.timeout, error_perm) as e:
+                        retry_count += 1
+                        log_message(f"Falha na transferência de {file}: {e}. Tentando novamente...")
+        except Exception as e:
+            log_message(f"Falha na conexão FTP: {e}")    
+        
+    except ImpalaError as e:
+        log_message(f'***** Erro de autenticação: {e} *****')
+        log_message('---- Automato encerrado com ERRO')
+    except Exception as other_error:
+        log_message(f'***** Algo deu errado - Procedimento abortado: {other_error} *****')
+        log_message('---- Automato encerrado com ERRO')
+    finally:
+        if ftp.sock is not None:
             ftp.quit()
-    else:
-       print("Erro: Conexão FTP não está disponível.")
-    log_message("Concluido com sucesso. ARQUIVO LOG GERADO!")
-    sys.stdout = sys.__stdout__
+        else:
+            print("Erro: Conexão FTP não está disponível.")
+            log_message("Concluido com sucesso. ARQUIVO LOG GERADO!")
+            sys.stdout = sys.__stdout__
+
+
+# Agendar a tarefa no horário armazenado em hora_carga
+try:
+    schedule.every().day.at(hora_carga).do(carga_automatica)
+    while True:
+        # now = datetime.now().strftime("%H:%M:%S")
+        print(' -----------------------------------------------------')
+        print('| GERENCIADOR DE CARGA AUTOMÁTICA - SIGOP - CGA 2024  |')
+        print('| ----------------------------------------------------|')
+        print(f'| Seção de Banco de Dados e Controle de Qualidade     |')
+        print(f'| Este software controla a carga de RAT e BOS que     |')
+        print(f'| alimento o módulo SIGOP.                            |')
+        print(f'|                       -*-                           |')
+        print(f'| A carga atualmente está programada para às {hora_carga}    |')
+        print(' -----------------------------------------------------', end='\r\n')
+        time.sleep(1)
+        schedule.run_pending()
+        os.system('cls')
+except Exception as e:
+    log_message(f'----Procedimento de carga falhou. Erro: {e}----')    

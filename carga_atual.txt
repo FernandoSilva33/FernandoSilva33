@@ -1,0 +1,5 @@
+datapreenchimento|contagem_ocorrencias
+19/05/24|1807
+18/05/24|11170
+17/05/24|12641
+16/05/24|12274
