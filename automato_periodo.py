@@ -136,7 +136,7 @@ try:
             AND OCO.nome_tipo_relatorio = 'RAT'
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND OCO.data_hora_fato BETWEEN '{}' AND '{}'
+            AND OCO.data_hora_alteracao BETWEEN '{}' AND '{}'
             ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
 
@@ -171,7 +171,7 @@ try:
             AND OCO.nome_tipo_relatorio = 'RAT'
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND OCO.data_hora_fato BETWEEN '{}' AND '{}'
+            AND OCO.data_hora_alteracao BETWEEN '{}' AND '{}'
             ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_2)
@@ -299,7 +299,7 @@ try:
             AND OCO.nome_tipo_relatorio IN ('BOS', 'BOS AMPLO')
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND OCO.data_hora_fato BETWEEN '{}' AND '{}'
+            AND OCO.data_hora_alteracao BETWEEN '{}' AND '{}'
             ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_5)
@@ -332,7 +332,7 @@ try:
             AND OCO.nome_tipo_relatorio IN ('BOS', 'BOS AMPLO')
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND OCO.data_hora_fato BETWEEN '{}' AND '{}'
+            AND OCO.data_hora_alteracao BETWEEN '{}' AND '{}'
             ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_6)
@@ -378,7 +378,7 @@ try:
             AND OCO.nome_tipo_relatorio IN ('BOS', 'BOS AMPLO')
             AND OCO.ind_estado IN ('R', 'F')
             AND OCO.data_hora_fato IS NOT NULL
-            AND OCO.data_hora_fato BETWEEN '{}' AND '{}'
+            AND OCO.data_hora_alteracao BETWEEN '{}' AND '{}'
             AND ENV.nome_completo_envolvido <> ''
             ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
