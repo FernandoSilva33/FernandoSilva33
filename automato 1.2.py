@@ -1,4 +1,4 @@
-import schedule
+import carga
 import time
 import sys
 import os
@@ -531,7 +531,7 @@ def carga_automatica():
 
 # Agendar a tarefa no horário armazenado em hora_carga
 try:
-    schedule.every().day.at(hora_carga).do(carga_automatica)
+    carga.every().day.at(hora_carga).do(carga_automatica)
     while True:
         # now = datetime.now().strftime("%H:%M:%S")
         print(' -----------------------------------------------------')
@@ -544,7 +544,7 @@ try:
         print(f'| A carga atualmente está programada para às {hora_carga}    |')
         print(' -----------------------------------------------------', end='\r\n')
         time.sleep(1)
-        schedule.run_pending()
+        carga.run_pending()
         os.system('cls')
 except Exception as e:
     log_message(f'----Procedimento de carga falhou. Erro: {e}----')    
