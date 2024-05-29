@@ -2,9 +2,9 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta
 import zipfile
-import query as q
-import api
-import utils
+import src.models.query as q
+import src.controlers.api as api
+import src.controlers.utils as utils
 
 log_message = utils.log_message
 
@@ -15,9 +15,9 @@ def check_carga():
     cursor.execute(query_0)
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
     dt = df.loc[0, "datapreenc"]
-    regs = df.loc[1, "cont"]
+    regs = df.loc[0, "cont"]
     regs_mean = df['cont'].mean()
-    regs_util = round(regs_mean-(regs_mean*0.35), 2)
+    regs_util = round(regs_mean-(regs_mean*0.95), 2)
     
     dt_now = datetime.now().strftime("%d/%m/%y")
     
