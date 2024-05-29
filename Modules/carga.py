@@ -7,11 +7,39 @@ import api
 import utils
 
 log_message = utils.log_message
+
+def check_carga():
+    cursor = api.conn_bisp()
+    query_0 = q.query_0
+    log_message('Conferindo carga diária da BISP...')
+    cursor.execute(query_0)
+    df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
+    dt = df.loc[0, "datapreenc"]
+    regs = df.loc[0, "cont"]
+    regs_mean = df['cont'].mean()
+    regs_util = round(regs_mean-(regs_mean*0.95), 2)
+    
+    dt_now = datetime.now().strftime("%d/%m/%y")
+    
+    if dt == dt_now and regs > regs_util:
+        log_message(f'Sucesso. Hoje, {dt_now}, a BISP está com exatamente {regs} carregados.')
+        utils.restart_hora()
+        carga_automatica()
+    else:
+        log_message(f'Erro! A BISP na data de hoje, {dt}, recebeu apenas {regs} registros. A carga será feita apenas quando este número for superior a média dos últimos 6 dias menos 30%, que hoje é aproximadamente {regs_util} registros.')
+        hora_carga_dttime = datetime.strptime(utils.hora_carga, '%H:%M')  # Transforma em datetime
+        hora_carga_dttime += timedelta(minutes=utils.time_try)  # Adiciona o tempo extra
+        utils.hora_carga = hora_carga_dttime.strftime('%H:%M')  # Transforma em string novamente
+        print(f'O tipo de dado da hora é {type(hora_carga_dttime)}')
+        utils.hora_carga = hora_carga_dttime.strftime('%H:%M')
+        print(f"Hora de carga após adicionar {utils.time_try} minuto: {utils.hora_carga}")
+        os.system('cls')
+        
 def carga_automatica():
     print('Iniciando carga automática Sigop')
 
     # Obter o diretório "Documentos" do usuário atual
-    pasta_documentos = os.path.expanduser("~" + os.sep + "Documentos")
+    pasta_documentos = os.path.expanduser("~" + os.sep + "Documents")
 
     # Criar o caminho para a pasta "Automato" dentro da pasta "Documentos"
     pasta_automato = os.path.join(pasta_documentos, "Automato")
@@ -24,7 +52,7 @@ def carga_automatica():
         os.makedirs(log_dir)
         
     # Verificar se a pasta "Logs" já existe, se não, criar
-    zip_dir = os.path.join(pasta_automato, "zip")
+    zip_dir = os.path.join(pasta_automato, "Zip")
     if not os.path.exists(zip_dir):
         os.makedirs(zip_dir)
 
@@ -161,5 +189,5 @@ def carga_automatica():
     log_message('----Query 8 processada com sucesso!----')
         
     # O arquivo login_ftp deve ser armazenado na raiz de Automato em Documentos
-    api.send_ftp(zip_dir)   
-
+    api.send_ftp(zip_dir)
+    utils.restart_hora()

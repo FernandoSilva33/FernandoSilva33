@@ -11,7 +11,6 @@ log_message = utils.log_message
 def conn_bisp():
     # Cria uma lista para armazenar usuário e senha
     usuarios_senhas = []
-
     # O arquivo credencials deve ser armazenado na raiz de Automato em Documentos
     with open(os.path.join(utils.pasta_automato, 'credencials'), 'r') as txtfile:
         for linha in txtfile:
@@ -25,18 +24,19 @@ def conn_bisp():
 
     try:
         conn = connect(host='clouderacdp02.prodemge.gov.br', port=21051,
-                    database='db_bisp_reds_reporting',
-                    auth_mechanism='PLAIN',
-                    use_ssl=1,
-                    user=usuario_esc,
-                    password=passw,)
+                        database='db_bisp_reds_reporting',
+                        auth_mechanism='PLAIN',
+                        use_ssl=True,
+                        user=usuario_esc,
+                        password=passw,
+                        )  
         cursor = conn.cursor()
     except ImpalaError as e:
-        log_message(f'Erro de autenticação: {e}')
-        log_message('---- Automato encerrado com ERRO')
+            log_message(f'Erro de autenticação: {e}')
+            log_message('---- Automato encerrado com ERRO')
     except Exception as other_error:
-        log_message(f'Algo deu errado - Procedimento abortado: {other_error}')
-        log_message('---- Automato encerrado com ERRO')
+            log_message(f'Algo deu errado - Procedimento abortado: {other_error}')
+            log_message('---- Automato encerrado com ERRO')
     return (cursor)
 
 def send_ftp(folder):
@@ -84,7 +84,7 @@ def send_ftp(folder):
                     # Abre e envia arquivo em modo binário
                     with open(file_path, 'rb') as fp:
                         log_message(f"Enviando arquivo: {file_path}")
-                        ftp.storbinary(f'STOR {file}', fp)
+                        ftp.storbinary(f'STOR {file}', fp) 
                     log_message(f"Arquivo enviado: {file}")
                     break  # Sai do loop quando sucesso
                 except (socket.timeout, error_perm) as e:
@@ -95,7 +95,9 @@ def send_ftp(folder):
     finally:
         if ftp.sock is not None:
             ftp.quit()
+            utils.restart_hora()
         else:
-            print("Erro: Conexão FTP não está disponível.")
-            log_message("Concluido com sucesso. ARQUIVO LOG GERADO!")
+            print("FTP Error: FTP conection is not avaliable.")
+            log_message("Conclude as FTP error. Read the log file.")
             sys.stdout = sys.__stdout__
+            utils.restart_hora()

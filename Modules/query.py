@@ -1,3 +1,12 @@
+query_0 = """
+            SELECT FROM_TIMESTAMP (data_hora_inclusao, 'dd/MM/yy') datapreenc,
+                COUNT(numero_ocorrencia) AS cont
+            FROM db_bisp_reds_reporting.tb_ocorrencia
+            WHERE data_hora_inclusao BETWEEN DATE_SUB(NOW(), INTERVAL 6 DAY) AND NOW()
+            AND digitador_id_orgao = 0
+            GROUP BY 1
+            ORDER BY 1 DESC;
+        """
 query_1 = """
             -- 1 - REDS_RAT - OK
             SELECT	
