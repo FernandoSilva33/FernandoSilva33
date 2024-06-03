@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 # Obter o diretório "Documentos" do usuário atual
@@ -17,7 +17,23 @@ def log_message(message):
     with open(nome_arquivo, 'a') as log_file:
         log_file.write(f"[{timestamp}] {message}\n")
     print(message)
-    
+
+def prorrogacao():
+    global hora_carga
+    hora_carga_dttime = datetime.strptime(hora_carga, '%H:%M')  # Transforma em datetime
+    hora_carga_dttime += timedelta(minutes=time_try)  # Adiciona o tempo extra
+    hora_carga = hora_carga_dttime.strftime('%H:%M')  # Transforma em string novamente
+    print(f'O tipo de dado da hora é {type(hora_carga_dttime)}')
+    return(hora_carga)
+
 def restart_hora():
     hora_carga = '05:30'
     return(hora_carga)
+
+print(hora_carga)
+prorrogacao()
+print(hora_carga)
+prorrogacao()
+print(hora_carga)
+prorrogacao()
+print(hora_carga)

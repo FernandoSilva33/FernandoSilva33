@@ -31,7 +31,6 @@ def check_carga():
         hora_carga_dttime += timedelta(minutes=utils.time_try)  # Adiciona o tempo extra
         utils.hora_carga = hora_carga_dttime.strftime('%H:%M')  # Transforma em string novamente
         print(f'O tipo de dado da hora é {type(hora_carga_dttime)}')
-        utils.hora_carga = hora_carga_dttime.strftime('%H:%M')
         print(f"Hora de carga após adicionar {utils.time_try} minuto: {utils.hora_carga}")
         os.system('cls')
         
