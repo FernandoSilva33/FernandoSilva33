@@ -11,7 +11,7 @@ zip_dir = os.path.join(pasta_automato, "Zip")
 
 today = datetime.now().strftime("%d-%m-%y")
 
-hora_carga = '05:30'    # Hora inicial de tentativa de carga.
+hora_carga = '07:18'    # Hora inicial de tentativa de carga.
 time_try = 30           # Tempo (em minutos) para a nova tentativa de carga
     
 # Configurar o logging
