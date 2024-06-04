@@ -1,15 +1,19 @@
 import schedule
 import time
 import os
-import utils
-import carga as sc
+from ..controlers import utils as ut
+from ..models import carga as sc
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(root_dir)
-log_message = utils.log_message
+log_message = ut.log_message
+
+def update_main():
+    schedule.clear()  # Limpa o agendamento atual
+    schedule.every().day.at(ut.hora_carga).do(sc.check_carga)
 
 try:
-    schedule.every().day.at(utils.hora_carga).do(sc.check_carga)
+    schedule.every().day.at(ut.hora_carga).do(sc.check_carga)
     while True:
         print(' -----------------------------------------------------')
         print('| GERENCIADOR DE CARGA AUTOMÁTICA - SIGOP - CGA 2024  |')
@@ -18,7 +22,7 @@ try:
         print('| Este software controla a carga de RAT e BOS que     |')
         print('| alimento o módulo SIGOP.                            |')
         print('|                       -*-                           |')
-        print(f'| A carga atualmente está programada para às {utils.hora_carga}    |')
+        print(f'| A carga atualmente está programada para às {ut.hora_carga}    |')
         print(' -----------------------------------------------------', end='\r\n')
         time.sleep(1)
         schedule.run_pending()

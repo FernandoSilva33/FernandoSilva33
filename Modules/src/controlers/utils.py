@@ -7,9 +7,9 @@ pasta_documentos = os.path.expanduser("~" + os.sep + "Documents")
 pasta_automato = os.path.join(pasta_documentos, "Automato")
 log_dir = os.path.join(pasta_automato, "Logs")
 
-hora_carga = '05:30'
-time_try = 30
-
+hora_carga = '21:09'
+time_try = 1
+    
 def log_message(message):
     now = datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -27,13 +27,6 @@ def prorrogacao():
     return(hora_carga)
 
 def restart_hora():
+    global hora_carga
     hora_carga = '05:30'
     return(hora_carga)
-
-print(hora_carga)
-prorrogacao()
-print(hora_carga)
-prorrogacao()
-print(hora_carga)
-prorrogacao()
-print(hora_carga)
