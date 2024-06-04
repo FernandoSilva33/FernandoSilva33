@@ -1,0 +1,1 @@
+#construtor de inicialização do Automato

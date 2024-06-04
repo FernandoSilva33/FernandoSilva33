@@ -3,10 +3,10 @@ import time
 import os
 from ..controlers import utils as ut
 from ..models import carga as sc
+from src.controlers.utils import log_message
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(root_dir)
-log_message = ut.log_message
 
 def update_main():
     schedule.clear()  # Limpa o agendamento atual
@@ -28,4 +28,4 @@ try:
         schedule.run_pending()
         os.system('cls')
 except Exception as e:
-    log_message(f'----Procedimento de carga falhou. Erro: {e}----')    
+    log_message(f'Procedimento de carga falhou. Erro: {e}')    

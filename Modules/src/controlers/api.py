@@ -4,7 +4,7 @@ import socket
 import random
 from impala.dbapi import connect, Error as ImpalaError
 import sys
-import utils
+import src.controlers.utils as utils
 
 log_message = utils.log_message
 
@@ -39,7 +39,7 @@ def conn_bisp():
             log_message('---- Automato encerrado com ERRO')
     return (cursor)
 
-def send_ftp(folder):
+def send_ftp():
     ftp_config = []
     with open(os.path.join(utils.pasta_automato, 'ftp_login'), 'r') as txtfile:
         for linha in txtfile:
@@ -58,7 +58,7 @@ def send_ftp(folder):
     ############################################################################################
 
     # Diretório dos arquivos ZIP
-    local_dir_path = folder
+    local_dir_path = utils.zip_dir
     # Timeout (segundos)
     timeout_value = 30
     # Objeto FTP timeout
