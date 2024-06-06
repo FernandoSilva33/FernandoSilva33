@@ -73,7 +73,7 @@ try:
     mes_31 = [1, 3, 5, 7, 8, 10, 12]
     mes_30 = [4, 6, 9, 11]
 
-    data_atual = datetime(2024, 1, 1)
+    data_atual = datetime(2024, 5, 1)
     data_fim = data_atual + timedelta(9)
 
     while data_atual <= data_fim:
