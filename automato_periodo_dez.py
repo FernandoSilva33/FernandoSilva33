@@ -76,6 +76,17 @@ try:
     data_atual = datetime(2024, 5, 1)
     data_fim = data_atual + timedelta(9)
 
+    # print(data_atual)
+    # print(type(data_atual))
+    # print(data_fim)
+    # print(type(data_fim))
+    # data_now = datetime.now()
+    # print(data_now)
+    # print(type(data_now))
+
+
+    # time.sleep(30)
+
     while data_atual <= data_fim:
         data_nome = data_atual.strftime("%Y%m%d")
         if data_atual.day > 20:
@@ -456,63 +467,65 @@ try:
         data_fim = data_fim + timedelta(days=1)
 
         if data_fim <= data_now:
-            data_atual = data_fim.date()
+            data_atual = data_fim
             log_message(f'Reiniciando protocolo para o dia {data_atual}')
+        else:
+            break
 
-    ############################################################################################
-    # O arquivo login_ftp deve ser armazenado na raiz de Automato em Documentos
-    ftp_config = []
-    with open(os.path.join(pasta_automato, 'ftp_login'), 'r') as txtfile:
-        for linha in txtfile:
-            host_ftp, porta_ftp, login_ftp, snh_ftp = linha.strip().split('|')
-            ftp_config.append((host_ftp, porta_ftp, login_ftp, snh_ftp))
+    # ############################################################################################
+    # # O arquivo login_ftp deve ser armazenado na raiz de Automato em Documentos
+    # ftp_config = []
+    # with open(os.path.join(pasta_automato, 'ftp_login'), 'r') as txtfile:
+    #     for linha in txtfile:
+    #         host_ftp, porta_ftp, login_ftp, snh_ftp = linha.strip().split('|')
+    #         ftp_config.append((host_ftp, porta_ftp, login_ftp, snh_ftp))
                 
-    # Acessando os elementos dentro da primeira tupla da lista ftp_config
-    host_ftp, porta_ftp, login_ftp, snh_ftp = ftp_config[0]
-    log_message('Acessando Servidor FTP')
+    # # Acessando os elementos dentro da primeira tupla da lista ftp_config
+    # host_ftp, porta_ftp, login_ftp, snh_ftp = ftp_config[0]
+    # log_message('Acessando Servidor FTP')
     
-    ############################################################################################
-    ftp_host = host_ftp
-    ftp_port = int(porta_ftp)
-    ftp_username = login_ftp
-    ftp_password = snh_ftp
-    ############################################################################################
+    # ############################################################################################
+    # ftp_host = host_ftp
+    # ftp_port = int(porta_ftp)
+    # ftp_username = login_ftp
+    # ftp_password = snh_ftp
+    # ############################################################################################
 
-    # Diretório dos arquivos ZIP
-    local_dir_path = zip_dir
-    # Timeout (segundos)
-    timeout_value = 10
-    # Objeto FTP timeout
-    ftp = FTP()
-    ftp.timeout = timeout_value
-    try:
-        # Conecta no host FTP
-        ftp.connect(ftp_host, ftp_port)
-        ftp.login(ftp_username, ftp_password)
-        # Cria uma lista com todos os arquivos no diretório
-        files = [f for f in os.listdir(local_dir_path) if os.path.isfile(os.path.join(local_dir_path, f))]
-        # Get a list of files in the remote directory
-        remote_files = ftp.nlst()
-        for file in files:
-            file_path = os.path.join(local_dir_path, file)
-            retry_count = 0
-            max_retries = 10
-            if file in remote_files:
-                log_message(f"O arquivo {file} já existe no FTP server.")
-                continue
-            while retry_count < max_retries:
-                try:
-                    # Abre e envia arquivo em modo binário
-                    with open(file_path, 'rb') as fp:
-                        log_message(f"Enviando arquivo: {file_path}")
-                        ftp.storbinary(f'STOR {file}', fp)
-                    log_message(f"Arquivo enviado: {file}")
-                    break  # Sai do loop quando sucesso
-                except (socket.timeout, error_perm) as e:
-                    retry_count += 1
-                    log_message(f"Falha na transferência de {file}: {e}. Tentando novamente...")
-    except Exception as e:
-        log_message(f"Falha na conexão FTP: {e}")
+    # # Diretório dos arquivos ZIP
+    # local_dir_path = zip_dir
+    # # Timeout (segundos)
+    # timeout_value = 10
+    # # Objeto FTP timeout
+    # ftp = FTP()
+    # ftp.timeout = timeout_value
+    # try:
+    #     # Conecta no host FTP
+    #     ftp.connect(ftp_host, ftp_port)
+    #     ftp.login(ftp_username, ftp_password)
+    #     # Cria uma lista com todos os arquivos no diretório
+    #     files = [f for f in os.listdir(local_dir_path) if os.path.isfile(os.path.join(local_dir_path, f))]
+    #     # Get a list of files in the remote directory
+    #     remote_files = ftp.nlst()
+    #     for file in files:
+    #         file_path = os.path.join(local_dir_path, file)
+    #         retry_count = 0
+    #         max_retries = 10
+    #         if file in remote_files:
+    #             log_message(f"O arquivo {file} já existe no FTP server.")
+    #             continue
+    #         while retry_count < max_retries:
+    #             try:
+    #                 # Abre e envia arquivo em modo binário
+    #                 with open(file_path, 'rb') as fp:
+    #                     log_message(f"Enviando arquivo: {file_path}")
+    #                     ftp.storbinary(f'STOR {file}', fp)
+    #                 log_message(f"Arquivo enviado: {file}")
+    #                 break  # Sai do loop quando sucesso
+    #             except (socket.timeout, error_perm) as e:
+    #                 retry_count += 1
+    #                 log_message(f"Falha na transferência de {file}: {e}. Tentando novamente...")
+    # except Exception as e:
+    #     log_message(f"Falha na conexão FTP: {e}")
         
 except ImpalaError as e:
     log_message('***** Erro de autenticação: {e} *****')
