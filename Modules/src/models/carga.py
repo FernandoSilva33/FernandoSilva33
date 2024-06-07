@@ -6,42 +6,35 @@ import src.models.query as q
 import src.controlers.api as api
 import src.controlers.utils as utils
 from src.controlers.utils import log_message
-from src.views.main import update_main
 import time
 
-# regs = 4000       -> HABILITAR PARA TESTES
-dt_now = datetime.now().strftime("%d/%m/%y")
-
 def check_carga():
+    from src.views.main import update_main
+    dt_now = datetime.now().strftime("%d/%m/%y")
     cursor = api.conn_bisp()
     query_0 = q.query_0
     log_message('Conferindo carga diária da BISP...')
     cursor.execute(query_0)
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
     dt = df.loc[0, "datapreenc"]
+    dt_old = df.loc[1, "datapreenc"]
     regs = df.loc[1, "cont"]
-    
-    #global regs  -> HABILITAR PARA TESTES
-    global dt_now
+    regs_anterior = df.loc[0, "cont"]
     
     regs_mean = df['cont'].mean()
     regs_util = round(regs_mean-(regs_mean*0.3), 2)
     
-    time.sleep(5)
-        
     if dt == dt_now and regs > regs_util:
-        log_message(f'Sucesso. Hoje, {dt_now}, a BISP já recebeu carga e na data de ontem temos exatamente {regs} registros carregados.')
+        log_message(f'Sucesso. BISP atualizada com {regs} em {dt_old}.')
         utils.restart_hora()
         update_main()
         carga_automatica()
     else:
-        log_message(f'Erro! A BISP na data de hoje, {dt}, recebeu apenas {regs} registros. A carga será feita apenas quando este número for superior a média dos últimos 6 dias menos 30%, que hoje é aproximadamente {regs_util} registros.')
+        log_message(f'A BISP DESATUALIZADA. Última carga em {dt} com {regs_anterior}.')
         hora_carga_dttime = datetime.strptime(utils.hora_carga, '%H:%M')     # Transforma em datetime
         hora_carga_dttime += timedelta(minutes=utils.time_try)               # Adiciona o tempo extra
         utils.hora_carga = hora_carga_dttime.strftime('%H:%M')               # Transforma em string novamente
-        print(f'O tipo de dado da hora é {type(hora_carga_dttime)}')
-        print(f"Hora de carga após adicionar {utils.time_try} minuto: {utils.hora_carga}")
-        regs *= 4
+        print(f'Nova checagem será realizada às {utils.hora_carga}')
         update_main()
         time.sleep(5)    
         os.system('cls')
@@ -67,8 +60,6 @@ def carga_automatica():
     if not os.path.exists(zip_dir):
         os.makedirs(zip_dir)
 
-    log_message('Iniciando login na BISP')
-    
     cursor = api.conn_bisp()
         
     #DATA USADA PARA NOME DOS ARQUIVOS
