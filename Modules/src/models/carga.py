@@ -17,15 +17,15 @@ def check_carga():
     cursor.execute(query_0)
     df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
     dt = df.loc[0, "datapreenc"]
+    dt_old = df.loc[1, "datapreenc"]
     regs = df.loc[1, "cont"]
     regs_anterior = df.loc[0, "cont"]
     
-    # regs = 12
     regs_mean = df['cont'].mean()
     regs_util = round(regs_mean-(regs_mean*0.3), 2)
     
     if dt == dt_now and regs > regs_util:
-        log_message(f'Sucesso. BISP atualizada com {regs} em {dt}.')
+        log_message(f'Sucesso. BISP atualizada com {regs} em {dt_old}.')
         utils.restart_hora()
         update_main()
         carga_automatica()

@@ -34,7 +34,6 @@ def prorrogacao():
     hora_carga_dttime = datetime.strptime(hora_carga, '%H:%M')  # Transforma em datetime
     hora_carga_dttime += timedelta(minutes=time_try)            # Adiciona o tempo extra
     hora_carga = hora_carga_dttime.strftime('%H:%M')            # Transforma em string novamente
-    print(f'O tipo de dado da hora é {type(hora_carga_dttime)}')
     os.system('cls')
     return(hora_carga)
 
