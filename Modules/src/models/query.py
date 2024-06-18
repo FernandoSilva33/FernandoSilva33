@@ -75,21 +75,21 @@ query_2 = """
             ORDER BY OCO.data_hora_fato;
         """
 query_3 = """
-        SELECT	
-            -- 3 - REDS_RAT_produtividade - OK
-                PROD.numero_ocorrencia AS 'RAT.NUM_ATIVIDADE',
-                PROD.indicador_descricao AS 'DESCRICAO',
-                PROD.quantidade AS 'QUANTIDADE'	
-            FROM
-                db_bisp_reds_reporting.tb_ocorrencia OCO
-            LEFT JOIN
-                db_bisp_reds_reporting.vw_rat_produtividade_ocorrencia_s PROD
-                ON OCO.numero_ocorrencia = PROD.numero_ocorrencia
-            WHERE 1=1
-            AND OCO.data_hora_fato IS NOT NULL
-            AND PROD.data_hora_fato BETWEEN '{}' AND '{}'
-            AND PROD.quantidade <> 0
-            ORDER BY PROD.data_hora_fato;
+        -- 3 - REDS_RAT_PRODUTIVIDADE
+        SELECT	      
+            PROD.numero_ocorrencia AS 'RAT.NUM_ATIVIDADE',
+            PROD.indicador_descricao AS 'DESCRICAO',
+            PROD.quantidade AS 'QUANTIDADE'	
+        FROM
+            db_bisp_reds_reporting.tb_ocorrencia OCO
+        LEFT JOIN
+            db_bisp_reds_reporting.tb_rat_produtividade_ocorrencia PROD
+            ON OCO.numero_ocorrencia = PROD.numero_ocorrencia
+        WHERE 1=1
+        AND OCO.data_hora_fato IS NOT NULL
+        AND PROD.data_hora_fato BETWEEN '{}' AND '{}'
+        AND PROD.quantidade <> 0
+        ORDER BY PROD.data_hora_fato;
         """
 query_4 = """
             -- 4 - REDS_RAT_VIATURAS - OK
