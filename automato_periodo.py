@@ -28,6 +28,16 @@ zip_dir = os.path.join(pasta_automato, "CSV")
 if not os.path.exists(zip_dir):
     os.makedirs(zip_dir)
 
+# Verificar se a pasta "BOS" já existe, se não, criar
+bos_dia = os.path.join(zip_dir, "BOS DIARIO")
+if not os.path.exists(bos_dia):
+    os.makedirs(bos_dia)
+
+# Verificar se a pasta "RAT" já existe, se não, criar
+rat_dia = os.path.join(zip_dir, "RAT DIARIO")
+if not os.path.exists(rat_dia):
+    os.makedirs(rat_dia)
+
 def log_message(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     nome_arquivo = os.path.join(log_dir, "log_periodo_{}.txt".format(data_log.strftime("%Y.%m.%d_%H%M%S")))
@@ -69,7 +79,7 @@ try:
     #################################################
 
     #DECLARAÇÃO DO INÍCIO DO PERÍODO
-    data_atual = datetime(2024, 5, 21)
+    data_atual = datetime(2024, 6, 11)
     data_fim = datetime.now()
     while data_atual < data_fim:
         data_nome = data_atual.strftime("%Y%m%d")
@@ -89,7 +99,7 @@ try:
         log_message(f'A data de inicio da extração é: {data_inicial}')
         log_message(f'A data de término da extração é: {data_final}')
 
-        os.chdir(zip_dir)
+        os.chdir(rat_dia)
         # log_message(f'Mudou para o diretório: {os.getcwd()}')
         # A QUERY A SER CONSULTADA
         
@@ -191,21 +201,21 @@ try:
         os.remove(arquivo_csv)
         
         query_3 = """
-        SELECT	
         -- 3 - REDS_RAT_produtividade - OK
-            PROD.numero_ocorrencia AS 'RAT.NUM_ATIVIDADE',
-            PROD.indicador_descricao AS 'DESCRICAO',
-            PROD.quantidade AS 'QUANTIDADE'	
-        FROM
-            db_bisp_reds_reporting.tb_ocorrencia OCO
-        LEFT JOIN
-            db_bisp_reds_reporting.vw_rat_produtividade_ocorrencia_s PROD
-            ON OCO.numero_ocorrencia = PROD.numero_ocorrencia
-        WHERE 1=1
-        AND OCO.data_hora_fato IS NOT NULL
-        AND PROD.data_hora_fato BETWEEN '{}' AND '{}'
-        AND PROD.quantidade <> 0
-        ORDER BY PROD.data_hora_fato;
+            SELECT        
+                PROD.numero_ocorrencia AS 'RAT.NUM_ATIVIDADE',
+                PROD.indicador_descricao AS 'DESCRICAO',
+                PROD.quantidade AS 'QUANTIDADE' 
+            FROM
+                db_bisp_reds_reporting.tb_ocorrencia OCO
+            LEFT JOIN
+                db_bisp_reds_reporting.tb_rat_produtividade_ocorrencia PROD
+                ON OCO.numero_ocorrencia = PROD.numero_ocorrencia
+            WHERE 1=1
+            AND OCO.data_hora_fato IS NOT NULL
+            AND PROD.data_hora_fato BETWEEN '{}' AND '{}'
+            AND PROD.quantidade <> 0
+            ORDER BY PROD.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_3)
         log_message('----Query 3 processada com sucesso!----')
@@ -257,6 +267,9 @@ try:
         log_message('----Query 4 processada com sucesso!----')
         
         os.remove(arquivo_csv)
+
+        os.chdir(bos_dia)
+
         query_5 = """
             -- 5 - REDS_BOS - OK
             SELECT	
@@ -431,63 +444,10 @@ try:
         with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
             zipf.write(arquivo_csv)
         data_atual = data_atual + timedelta(days=1)
+        
         log_message(f'Reiniciando protocolo para o dia {data_atual}')
         os.remove(arquivo_csv)
-    
-    # O arquivo login_ftp deve ser armazenado na raiz de Automato em Documentos
-    ftp_config = []
-    with open(os.path.join(pasta_automato, 'ftp_login'), 'r') as txtfile:
-        for linha in txtfile:
-            host_ftp, porta_ftp, login_ftp, snh_ftp = linha.strip().split('|')
-            ftp_config.append((host_ftp, porta_ftp, login_ftp, snh_ftp))
-                
-    # # Acessando os elementos dentro da primeira tupla da lista ftp_config
-    # host_ftp, porta_ftp, login_ftp, snh_ftp = ftp_config[0]
-    # log_message('Acessando Servidor FTP')
-    
-    # ############################################################################################
-    # ftp_host = host_ftp
-    # ftp_port = int(porta_ftp)
-    # ftp_username = login_ftp
-    # ftp_password = snh_ftp
-    # ############################################################################################
-
-    # # Diretório dos arquivos ZIP
-    # local_dir_path = 'D:\\CSV'
-    # # Timeout (segundos)
-    # timeout_value = 10
-    # # Objeto FTP timeout
-    # ftp = FTP()
-    # ftp.timeout = timeout_value
-    # try:
-    #     # Conecta no host FTP
-    #     ftp.connect(ftp_host, ftp_port)
-    #     ftp.login(ftp_username, ftp_password)
-    #     # Cria uma lista com todos os arquivos no diretório
-    #     files = [f for f in os.listdir(local_dir_path) if os.path.isfile(os.path.join(local_dir_path, f))]
-    #     # Get a list of files in the remote directory
-    #     remote_files = ftp.nlst()
-    #     for file in files:
-    #         file_path = os.path.join(local_dir_path, file)
-    #         retry_count = 0
-    #         max_retries = 10
-    #         if file in remote_files:
-    #             log_message(f"O arquivo {file} já existe no FTP server.")
-    #             continue
-    #         while retry_count < max_retries:
-    #             try:
-    #                 # Abre e envia arquivo em modo binário
-    #                 with open(file_path, 'rb') as fp:
-    #                     log_message(f"Enviando arquivo: {file_path}")
-    #                     ftp.storbinary(f'STOR {file}', fp)
-    #                 log_message(f"Arquivo enviado: {file}")
-    #                 break  # Sai do loop quando sucesso
-    #             except (socket.timeout, error_perm) as e:
-    #                 retry_count += 1
-    #                 log_message(f"Falha na transferência de {file}: {e}. Tentando novamente...")
-    # except Exception as e:
-    #     log_message(f"Falha na conexão FTP: {e}")
-        
+            
 except ImpalaError as e:
     log_message('***** Erro de autenticação: {e} *****')
     input('----Concluido com ERRO - Pressione Enter para fechar----')
@@ -495,9 +455,6 @@ except Exception as other_error:
     log_message(f'***** Algo deu errado - Procedimento abortado: {other_error} *****')
     input('----Automato encerrado com ERRO - Pressione Enter para fechar----')
 finally:
-    if ftp.sock is not None:
-            ftp.quit()
-    else:
-       print("Erro: Conexão FTP não está disponível.")
+    print("Extração terminada.")
     log_message("Concluido com sucesso. ARQUIVO LOG GERADO!")
     sys.stdout = sys.__stdout__
