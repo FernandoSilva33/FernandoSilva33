@@ -44,7 +44,13 @@ def log_message(message):
     with open(nome_arquivo, 'a') as log_file:
         log_file.write(f"[{timestamp}] {message}\n")
     print(message)
-    
+
+def _existe(file_name, folder_path):
+    # Cria o caminho completo do arquivo
+    file_path = os.path.join(folder_path, file_name)
+    # Verifica se o caminho é um arquivo existente
+    return os.path.isfile(file_path)
+
 data_log = datetime.now()
 
 log_message('----Iniciando login na BISP----')
@@ -170,21 +176,32 @@ try:
         """.format(data_inicial, data_final)
 
         log_message('----Iniciando processamento da query.----')
-        cursor.execute(query_1)
-        log_message('----Query 1 processada com sucesso!----')
 
-        df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
+        arquivo_csv = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_consulta}.csv"
+        arquivo_zip = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_consulta}.zip"
 
-        # Converte as colunas em uppercase
-        df.columns = [col.upper() for col in df.columns]
+        # Confere se o arquivo já existe
+        file_name = arquivo_zip
+        folder_path = rat_dia
+
+        if _existe(file_name, folder_path):
+            cursor.execute(query_1)
+
+            df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
+
+            # Converte as colunas em uppercase
+            df.columns = [col.upper() for col in df.columns]
+            
+            df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
+            with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
+                zipf.write(arquivo_csv)
+            
+            log_message('----Query 1 processada com sucesso!----')
+            os.remove(arquivo_csv) 
+        else:
+            print(f'O arquivo {arquivo_zip} já existe.')
         
-        arquivo_csv = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_term_consulta}.csv"
-        arquivo_zip = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_term_consulta}.zip"
-        df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
-        with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
-            zipf.write(arquivo_csv)
-        
-        os.remove(arquivo_csv)
+       
         query_2 = """
             -- 2 -REDS_RAT_EFETIVOS - OK
             SELECT	
@@ -203,21 +220,33 @@ try:
             AND OCO.data_hora_alteracao BETWEEN '{}' AND '{}'
             ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
-        cursor.execute(query_2)
-        log_message('----Query 2 processada com sucesso!----')
 
-        df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
-
-        # Converte as colunas em uppercase
-        df.columns = [col.upper() for col in df.columns]
+        log_message('----Iniciando processamento da query.----')
 
         arquivo_csv = f"CARNAVAL_REDS_RAT_EFETIVOS_{data_consulta}_{data_term_consulta}.csv"
         arquivo_zip = f"CARNAVAL_REDS_RAT_EFETIVOS_{data_consulta}_{data_term_consulta}.zip"
-        df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
-        with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
-            zipf.write(arquivo_csv)
         
-        os.remove(arquivo_csv)
+        # Confere se o arquivo já existe
+        file_name = arquivo_zip
+        folder_path = rat_dia
+
+        if _existe(file_name, folder_path):
+            cursor.execute(query_2)
+
+            df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
+
+            # Converte as colunas em uppercase
+            df.columns = [col.upper() for col in df.columns]
+            
+            df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
+            with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
+                zipf.write(arquivo_csv)
+            
+            log_message('----Query 2 processada com sucesso!----')
+            os.remove(arquivo_csv) 
+        else:
+            print(f'O arquivo {arquivo_zip} já existe.')
+                
         
         query_3 = """
             -- 3 - REDS_RAT_produtividade - OK
