@@ -28,13 +28,29 @@ zip_dir = os.path.join(pasta_automato, "CSV")
 if not os.path.exists(zip_dir):
     os.makedirs(zip_dir)
 
+# Verificar se a pasta "BOS" já existe, se não, criar
+bos = os.path.join(zip_dir, "BOS")
+if not os.path.exists(bos):
+    os.makedirs(bos)
+
+# Verificar se a pasta "RAT" já existe, se não, criar
+rat = os.path.join(zip_dir, "RAT")
+if not os.path.exists(rat):
+    os.makedirs(rat)
+
 def log_message(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     nome_arquivo = os.path.join(log_dir, "log_periodo_{}.txt".format(data_log.strftime("%Y.%m.%d_%H%M%S")))
     with open(nome_arquivo, 'a') as log_file:
         log_file.write(f"[{timestamp}] {message}\n")
     print(message)
-    
+
+def _existe(file_name, folder_path):
+    # Cria o caminho completo do arquivo
+    file_path = os.path.join(folder_path, file_name)
+    # Verifica se o caminho é um arquivo existente
+    return os.path.isfile(file_path)
+
 data_log = datetime.now()
 
 log_message('----Iniciando login na BISP----')
@@ -51,7 +67,6 @@ with open(os.path.join(pasta_automato, 'credencials'), 'r') as txtfile:
 usuario_senha_aleatorio = random.choice(usuarios_senhas)
 usuario_esc = usuario_senha_aleatorio[0]
 passw = usuario_senha_aleatorio[1]
-log_message(f'Acessando com o usuário: {usuario_esc}')
 
 try:
     conn = connect(host='clouderacdp02.prodemge.gov.br', port=21051,
@@ -68,24 +83,13 @@ try:
     ### LAÇO DE REPETIÇÃO PARA PERÍODO PROGRAMADO ###
     #################################################
 
-    #DECLARAÇÃO DO INÍCIO DO PERÍODO
 
     mes_31 = [1, 3, 5, 7, 8, 10, 12]
     mes_30 = [4, 6, 9, 11]
 
-    data_atual = datetime(2024, 5, 1)
+    #DECLARAÇÃO DO INÍCIO DO PERÍODO
+    data_atual = datetime(2024, 6, 11)
     data_fim = data_atual + timedelta(9)
-
-    # print(data_atual)
-    # print(type(data_atual))
-    # print(data_fim)
-    # print(type(data_fim))
-    # data_now = datetime.now()
-    # print(data_now)
-    # print(type(data_now))
-
-
-    # time.sleep(30)
 
     while data_atual <= data_fim:
         data_nome = data_atual.strftime("%Y%m%d")
@@ -120,9 +124,9 @@ try:
         log_message(f'A data de inicio da extração é: {data_inicial}')
         log_message(f'A data de término da extração é: {data_final}')
 
-        os.chdir(zip_dir)
-        log_message(f'Mudou para o diretório: {os.getcwd()}')
-        # A QUERY A SER CONSULTADA
+        os.chdir(rat)
+        # log_message(f'Mudou para o diretório: {os.getcwd()}')
+        #A QUERY A SER CONSULTADA
         
         query_1 = """
             -- 1 - REDS_RAT - OK
@@ -172,21 +176,32 @@ try:
         """.format(data_inicial, data_final)
 
         log_message('----Iniciando processamento da query.----')
-        cursor.execute(query_1)
-        log_message('----Query 1 processada com sucesso!----')
 
-        df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
+        arquivo_csv = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_consulta}.csv"
+        arquivo_zip = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_consulta}.zip"
 
-        # Converte as colunas em uppercase
-        df.columns = [col.upper() for col in df.columns]
+        # Confere se o arquivo já existe
+        file_name = arquivo_zip
+        folder_path = rat_dia
+
+        if _existe(file_name, folder_path):
+            cursor.execute(query_1)
+
+            df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
+
+            # Converte as colunas em uppercase
+            df.columns = [col.upper() for col in df.columns]
+            
+            df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
+            with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
+                zipf.write(arquivo_csv)
+            
+            log_message('----Query 1 processada com sucesso!----')
+            os.remove(arquivo_csv) 
+        else:
+            print(f'O arquivo {arquivo_zip} já existe.')
         
-        arquivo_csv = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_term_consulta}.csv"
-        arquivo_zip = f"CARNAVAL_REDS_RAT_{data_consulta}_{data_term_consulta}.zip"
-        df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
-        with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
-            zipf.write(arquivo_csv)
-        
-        os.remove(arquivo_csv)
+       
         query_2 = """
             -- 2 -REDS_RAT_EFETIVOS - OK
             SELECT	
@@ -205,38 +220,50 @@ try:
             AND OCO.data_hora_alteracao BETWEEN '{}' AND '{}'
             ORDER BY OCO.data_hora_fato;
         """.format(data_inicial, data_final)
-        cursor.execute(query_2)
-        log_message('----Query 2 processada com sucesso!----')
 
-        df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
-
-        # Converte as colunas em uppercase
-        df.columns = [col.upper() for col in df.columns]
+        log_message('----Iniciando processamento da query.----')
 
         arquivo_csv = f"CARNAVAL_REDS_RAT_EFETIVOS_{data_consulta}_{data_term_consulta}.csv"
         arquivo_zip = f"CARNAVAL_REDS_RAT_EFETIVOS_{data_consulta}_{data_term_consulta}.zip"
-        df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
-        with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
-            zipf.write(arquivo_csv)
         
-        os.remove(arquivo_csv)
+        # Confere se o arquivo já existe
+        file_name = arquivo_zip
+        folder_path = rat_dia
+
+        if _existe(file_name, folder_path):
+            cursor.execute(query_2)
+
+            df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
+
+            # Converte as colunas em uppercase
+            df.columns = [col.upper() for col in df.columns]
+            
+            df.to_csv(arquivo_csv, index=False, sep='|', encoding='utf-8')
+            with zipfile.ZipFile(arquivo_zip, 'w') as zipf:
+                zipf.write(arquivo_csv)
+            
+            log_message('----Query 2 processada com sucesso!----')
+            os.remove(arquivo_csv) 
+        else:
+            print(f'O arquivo {arquivo_zip} já existe.')
+                
         
         query_3 = """
-        SELECT	
-        -- 3 - REDS_RAT_produtividade - OK
-            PROD.numero_ocorrencia AS 'RAT.NUM_ATIVIDADE',
-            PROD.indicador_descricao AS 'DESCRICAO',
-            PROD.quantidade AS 'QUANTIDADE'	
-        FROM
-            db_bisp_reds_reporting.tb_ocorrencia OCO
-        LEFT JOIN
-            db_bisp_reds_reporting.vw_rat_produtividade_ocorrencia_s PROD
-            ON OCO.numero_ocorrencia = PROD.numero_ocorrencia
-        WHERE 1=1
-        AND OCO.data_hora_fato IS NOT NULL
-        AND PROD.data_hora_fato BETWEEN '{}' AND '{}'
-        AND PROD.quantidade <> 0
-        ORDER BY PROD.data_hora_fato;
+            -- 3 - REDS_RAT_produtividade - OK
+            SELECT        
+                PROD.numero_ocorrencia AS 'RAT.NUM_ATIVIDADE',
+                PROD.indicador_descricao AS 'DESCRICAO',
+                PROD.quantidade AS 'QUANTIDADE' 
+            FROM
+                db_bisp_reds_reporting.tb_ocorrencia OCO
+            LEFT JOIN
+                db_bisp_reds_reporting.tb_rat_produtividade_ocorrencia PROD
+                ON OCO.numero_ocorrencia = PROD.numero_ocorrencia
+            WHERE 1=1
+            AND OCO.data_hora_fato IS NOT NULL
+            AND PROD.data_hora_fato BETWEEN '{}' AND '{}'
+            AND PROD.quantidade <> 0
+            ORDER BY PROD.data_hora_fato;
         """.format(data_inicial, data_final)
         cursor.execute(query_3)
         log_message('----Query 3 processada com sucesso!----')
@@ -288,6 +315,8 @@ try:
         log_message('----Query 4 processada com sucesso!----')
         
         os.remove(arquivo_csv)
+
+        os.chdir(bos)
         query_5 = """
             -- 5 - REDS_BOS - OK
             SELECT	
@@ -471,62 +500,7 @@ try:
             log_message(f'Reiniciando protocolo para o dia {data_atual}')
         else:
             break
-
-    # ############################################################################################
-    # # O arquivo login_ftp deve ser armazenado na raiz de Automato em Documentos
-    # ftp_config = []
-    # with open(os.path.join(pasta_automato, 'ftp_login'), 'r') as txtfile:
-    #     for linha in txtfile:
-    #         host_ftp, porta_ftp, login_ftp, snh_ftp = linha.strip().split('|')
-    #         ftp_config.append((host_ftp, porta_ftp, login_ftp, snh_ftp))
-                
-    # # Acessando os elementos dentro da primeira tupla da lista ftp_config
-    # host_ftp, porta_ftp, login_ftp, snh_ftp = ftp_config[0]
-    # log_message('Acessando Servidor FTP')
-    
-    # ############################################################################################
-    # ftp_host = host_ftp
-    # ftp_port = int(porta_ftp)
-    # ftp_username = login_ftp
-    # ftp_password = snh_ftp
-    # ############################################################################################
-
-    # # Diretório dos arquivos ZIP
-    # local_dir_path = zip_dir
-    # # Timeout (segundos)
-    # timeout_value = 10
-    # # Objeto FTP timeout
-    # ftp = FTP()
-    # ftp.timeout = timeout_value
-    # try:
-    #     # Conecta no host FTP
-    #     ftp.connect(ftp_host, ftp_port)
-    #     ftp.login(ftp_username, ftp_password)
-    #     # Cria uma lista com todos os arquivos no diretório
-    #     files = [f for f in os.listdir(local_dir_path) if os.path.isfile(os.path.join(local_dir_path, f))]
-    #     # Get a list of files in the remote directory
-    #     remote_files = ftp.nlst()
-    #     for file in files:
-    #         file_path = os.path.join(local_dir_path, file)
-    #         retry_count = 0
-    #         max_retries = 10
-    #         if file in remote_files:
-    #             log_message(f"O arquivo {file} já existe no FTP server.")
-    #             continue
-    #         while retry_count < max_retries:
-    #             try:
-    #                 # Abre e envia arquivo em modo binário
-    #                 with open(file_path, 'rb') as fp:
-    #                     log_message(f"Enviando arquivo: {file_path}")
-    #                     ftp.storbinary(f'STOR {file}', fp)
-    #                 log_message(f"Arquivo enviado: {file}")
-    #                 break  # Sai do loop quando sucesso
-    #             except (socket.timeout, error_perm) as e:
-    #                 retry_count += 1
-    #                 log_message(f"Falha na transferência de {file}: {e}. Tentando novamente...")
-    # except Exception as e:
-    #     log_message(f"Falha na conexão FTP: {e}")
-        
+           
 except ImpalaError as e:
     log_message('***** Erro de autenticação: {e} *****')
     input('----Concluido com ERRO - Pressione Enter para fechar----')
