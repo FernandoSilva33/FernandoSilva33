@@ -11,7 +11,7 @@ pasta_automato = os.path.join(pasta_documentos, "Automato")
 log_dir = os.path.join(pasta_automato, "Logs")  # Cria pasta Logs
 zip_dir = os.path.join(pasta_automato, "Zip")   # Cria pasta Zip
 
-hora_carga = '05:30'    # Hora inicial de tentativa de carga.
+hora_carga = '19:43'    # Hora inicial de tentativa de carga.
 time_try = 15           # Tempo (em minutos) para a nova tentativa de carga
     
 log_file = os.path.join(log_dir, 'Log_carga.log')  # Nome base do arquivo

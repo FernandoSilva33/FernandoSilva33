@@ -1,9 +1,10 @@
+import modules
 import schedule
 import time
 import os
-from ..controlers import utils as ut
-from ..models import carga as sc
-from ..controlers.utils import log_message
+from modules import utils as ut
+from modules.utils import log_message
+from modules import carga as sc
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(root_dir)

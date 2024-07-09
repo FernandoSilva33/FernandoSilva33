@@ -3,7 +3,7 @@ import time
 import os
 from ..controlers import utils as ut
 from ..models import carga as sc
-from src.controlers.utils import log_message
+from ..controlers.utils import log_message
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(root_dir)

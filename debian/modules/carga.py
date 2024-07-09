@@ -2,10 +2,10 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta
 import zipfile
-import query as q
-import api
-import utils
-from utils import log_message
+from modules import query as q
+from modules import api
+from modules import utils
+from modules.utils import log_message
 import time
 
 def check_carga():
